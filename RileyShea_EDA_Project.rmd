@@ -1,14 +1,5 @@
-TITLE by YOUR_NAME_HERE
+Red Wine Quality EDA by Riley Shea
 ========================================================
-
-> **Tip**: You will see quoted sections like this throughout the template to
-help you construct your report. Make sure that you remove these notes before
-you finish and submit your project!
-
-> **Tip**: One of the requirements of this project is that your code follows
-good formatting techniques, including limiting your lines to 80 characters or
-less. If you're using RStudio, go into Preferences \> Code \> Display to set up
-a margin line to help you keep track of this guideline!
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Load all of the packages that you end up using in your analysis in this code
@@ -24,11 +15,13 @@ a margin line to help you keep track of this guideline!
 # want it to. This will clean up the flow of your report.
 
 library(ggplot2)
+library(knitr)
+library(dplyr)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-
+pf <- read.csv('wineQualityReds.csv', sep=',')
 ```
 
 > **Tip**: Before you create any plots, it is a good idea to provide a short
