@@ -28,6 +28,18 @@ pf <- read.csv('wineQualityReds.csv', sep=',')
 introduction into the dataset that you are planning to explore. Replace this
 quoted text with that general information!
 
+> This dataset appears to provide data regarding the attributes of red wine and
+how those attributes affect the quality of the red wine.
+
+* X:  
+
+```{r}
+names(pf)
+summary(pf)
+```
+
+
+
 # Univariate Plots Section
 
 > **Tip**: In this section, you should perform some preliminary exploration of
