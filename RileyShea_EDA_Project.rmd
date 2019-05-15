@@ -1,9 +1,11 @@
 ---
-output: html_document
-editor_options: 
+title: "Red Wine Quality EDA by Riley Shea"
+output:
+  html_document:
+    df_print: paged
+editor_options:
   chunk_output_type: console
 ---
-Red Wine Quality EDA by Riley Shea
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
@@ -26,7 +28,7 @@ library(dplyr)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-df <- read.csv('wineQualityReds.csv', sep=',')
+wine <- read.csv('winequalityreds.csv', sep = ',')
 ```
 This report explores a dataset containing chemical properties and other
 characteristics of red wine.
@@ -39,11 +41,11 @@ characteristics of red wine.
 # Univariate Plots Section
 ```{r}
 # Dimensions of df
-dim(df)
+dim(wine)
 # list the the structure of df
-str(df)
+str(wine)
 # some quick stats on the columns of df
-summary(df)
+summary(wine)
 ```
 Our dataset consists of thirteen variables, with almost 1600 observations.
 

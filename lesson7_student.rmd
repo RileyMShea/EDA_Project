@@ -20,12 +20,16 @@ Notes:
 Notes:
 
 ```{r Third Qualitative Variable}
+library(ggplot2)
+pf <- read.csv('pseudo_facebook.tsv', sep='\t')
 ggplot(aes(x = gender, y = age),
-       data = subset(pf, !is.na(gender))) + geom_boxplot() +
-  stat_summary(fun.y = mean, geom = 'point', shape = 4)
+data = subset(pf,!is.na(gender))) + geom_boxplot() +
+stat_summary(fun.y = mean,
+geom = 'point',
+shape = 4)
 
-ggplot(subset(pf, !is.na(gender)), aes(age, friend_count)) +
-  geom_line(aes(color = gender), stat = 'summary', fun.y = median)
+ggplot(subset(pf,!is.na(gender)), aes(age, friend_count)) +
+geom_line(aes(color = gender), stat = 'summary', fun.y = median)
 ```
 
 ```{r}

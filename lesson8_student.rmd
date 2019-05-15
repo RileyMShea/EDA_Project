@@ -1,9 +1,9 @@
 ---
-output: html_document
+title: "Lesson 8"
+output: html_notebook
 editor_options: 
   chunk_output_type: console
 ---
-Lesson 8
 ========================================================
 
 ### Welcome
