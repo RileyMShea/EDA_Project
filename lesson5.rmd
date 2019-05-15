@@ -1,0 +1,132 @@
+---
+title: "Lesson 5"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r Q1}
+# In this problem set, you'll continue
+# to explore the diamonds data set.
+
+# Your first task is to create a
+# scatterplot of price vs x.
+# using the ggplot syntax.
+
+# This assignment is not graded and
+# will be marked as correct when you submit.
+
+# ENTER YOUR CODE BELOW THIS LINE
+# ===========================================
+library(ggplot2)
+data("diamonds")
+ggplot(diamonds, aes(price, x)) +
+  geom_point()
+```
+
+```{r}
+?diamonds
+```
+
+```{r Q2}
+cor(diamonds$price, diamonds$x)
+cor(diamonds$price, diamonds$y)
+cor(diamonds$price, diamonds$z)
+```
+
+```{r Q3}
+ggplot(diamonds, aes(price, depth)) +
+  geom_point()
+```
+
+```{r Q4}
+ggplot(data = diamonds, aes(x = depth, y = price)) + 
+  geom_point(alpha = 1/100) +
+  scale_x_continuous(breaks = seq(0,500,2))
+```
+
+```{r Q7}
+cor(diamonds$depth, diamonds$price)
+```
+
+```{r Q8}
+ggplot(diamonds, aes(x = diamonds$price, y = diamonds$carat)) +
+  geom_point() +
+  xlim(0, quantile(diamonds$price , .99)) +
+  ylim(0, quantile(diamonds$carat , .99)) +
+  geom_smooth(method = 'lm', color='red')
+```
+
+```{r Q10}
+diamonds$volume <- diamonds$x * diamonds$y * diamonds$z
+
+ggplot(diamonds, aes(price, volume)) +
+  geom_point()
+```
+```{r}
+library(dplyr)
+diamonds %>% count(diamonds$volume == 0)
+```
+
+```{r}
+# q11
+trimmed <- subset(diamonds, volume >= 0 & volume < 800) 
+cor(trimmed$price, trimmed$volume)
+```
+```{r}
+# q12
+ggplot(diamonds, aes(x = diamonds$price, y = diamonds$volume)) +
+  geom_point(alpha = 1/100) +
+  ylim(1, 800) +
+  geom_smooth(method = 'lm', color='red')
+
+```
+```{r}
+# Q13
+diamondsByClarity <- diamonds %>%
+  group_by(clarity) %>%
+    summarise(mean_price = mean(price),
+              median_price = median(price),
+              min_price = min(price),
+              max_price = max(price),
+              n = n()) %>%
+  arrange(clarity)
+head(diamondsByClarity, 20)
+
+# pf.fc_by_age <- pf %>%
+#   group_by(age) %>%
+#          summarise(friend_count_mean = mean(friend_count),
+#           friend_count_median = median(friend_count),
+#           n = n()) %>%
+#   arrange(age)
+# 
+# head(pf.fc_by_age, 20)
+```
+```{r}
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+```
+when you want to use your data existing in your data frame as y value, you must add stat = "identity" in mapping parameter. Function geom_bar have default y value
+```{r Q 14}
+
+head(diamonds_mp_by_clarity, 20)
+head(diamonds_mp_by_color, 20)
+library(gridExtra)
+p1 <- ggplot(diamonds_mp_by_clarity) +
+  geom_bar(mapping = aes(y = mean_price, x = clarity), stat = 'identity')
+p2 <- ggplot(diamonds_mp_by_color) +
+  geom_bar(mapping = aes(y = mean_price, x = color), stat = 'identity') +
+  arrange(color)
+grid.arrange(p1, p2, ncol = 1 )
+```
+
+
+
+
+
+
+
+

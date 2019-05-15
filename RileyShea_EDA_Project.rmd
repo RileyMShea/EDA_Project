@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 Red Wine Quality EDA by Riley Shea
 ========================================================
 
@@ -21,26 +26,40 @@ library(dplyr)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-pf <- read.csv('wineQualityReds.csv', sep=',')
+df <- read.csv('wineQualityReds.csv', sep=',')
 ```
+This report explores a dataset containing chemical properties and other
+characteristics of red wine.
 
-> **Tip**: Before you create any plots, it is a good idea to provide a short
-introduction into the dataset that you are planning to explore. Replace this
-quoted text with that general information!
 
-> This dataset appears to provide data regarding the attributes of red wine and
-how those attributes affect the quality of the red wine.
 
-* X:  
-
-```{r}
-names(pf)
-summary(pf)
-```
 
 
 
 # Univariate Plots Section
+```{r}
+# Dimensions of df
+dim(df)
+# list the the structure of df
+str(df)
+# some quick stats on the columns of df
+summary(df)
+```
+Our dataset consists of thirteen variables, with almost 1600 observations.
+
+```{r}
+ggplot(aes(quality), data=df) +
+  geom_histogram(binwidth = 1, fill = '#5760AB') +
+  scale_x_continuous(breaks = seq(0, 10, 1))
+
+```
+
+```{r}
+ggplot(aes(quality), data=df) +
+  geom_histogram(binwidth = 1, fill = 'brown') +
+  scale_x_log10()
+
+```
 
 > **Tip**: In this section, you should perform some preliminary exploration of
 your dataset. Run some summaries of the data and create univariate plots to
@@ -50,6 +69,19 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
+qplot(x=df$fixed.acidity, data=df, bins = 100)
+qplot(x=df$volatile.acidity, data=df, bins = 100)
+qplot(x=df$citric.acid, data=df, bins = 100)
+qplot(x=df$residual.sugar, data=df, bins = 100)
+qplot(x=df$chlorides,data=df, bins = 100)
+qplot(x=df$free.sulfur.dioxide, data=df, bins = 100)
+qplot(x=df$total.sulfur.dioxide, data=df, bins = 100)
+qplot(x=df$density, data=df, bins = 100)
+qplot(x=pH, data=df, bins = 100)
+qplot(x=sulphates, data=df, bins = 100)
+qplot(x=alcohol, data=df, bins = 100)
+qplot(x=quality, data=df, bins = 100)
+
 
 ```
 
