@@ -25,17 +25,31 @@ library(ggplot2)
 library(knitr)
 library(dplyr)
 library(grid)
+```
+```{r}
+install.packages('GGally')
+install.packages('scales')
+install.packages('memisc')
+install.packages('lattice')
+install.packages('MASS')
+install.packages('car')
+install.packages('reshape')
+install.packages('plyr')
+
 library(gridExtra)
 library(GGally)
 library(scales)
 library(memisc)
+
 ```
+
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 wine <- read.csv('winequalityreds.csv', sep = ',')
 # drop line number column 'X'
 wine <- select(wine, -c(X))
+
 ```
 This report explores a dataset containing chemical attributes and quality
 scores for approximately 1600 samples of red wine.
@@ -53,6 +67,11 @@ Our dataset consists of 12 variables with ~1600 observations.
 
 The 'X' variable is merely the row number, so it was dropped after import.
 The quality is a median of >= 3 expert's ratings
+
+```{r}
+wine$badfso <- factor(wine$free.sulfur.dioxide > 50)
+```
+
 
 ```{r Quality histogram}
 ggplot(aes(quality), data = wine) +
@@ -87,9 +106,9 @@ ggplot(aes(volatile.acidity), data = wine) +
 ```
 ```{r Citric Acid Histogram}
 ggplot(aes(citric.acid), data = wine) +
-  geom_histogram(binwidth = .05, fill = '#5760AB') +
+  geom_histogram(binwidth = .01, fill = '#5760AB') +
   ggtitle('Citric Acid') +  
-  scale_x_continuous(breaks = seq(0.0, 0.8, .1), limits = c(.0, .8)) 
+  scale_x_continuous(breaks = seq(0.0, 0.8, .1), limits = c(-.1, .8)) 
 ```
 
 ```{r Residual Sugar Histogram}
@@ -178,6 +197,8 @@ your paragraphs so that they too are formatted for easy readability.
 reflect on and summarize what you've found. Use the questions below to help you
 gather your observations and add your own if you have other thoughts!
 
+[//]: # "Comment"
+
 ### What is the structure of your dataset?
 
 There are 15,999 wine samples in the dataset with 12 features(fixed acidity,
@@ -229,8 +250,6 @@ I would've liked to create some categorical variables for input variables
 with thresholds that define a wine characteristic (sweet/dry, acidic/basic, 
 ) unfortunately the wine values weren't split between the two thresholds. 
 
-```{r}
-```
 
 
 ### Of the features you investigated, were there any unusual distributions? \
@@ -249,12 +268,17 @@ yourself to relationships between a main output feature and one of the
 supporting variables. Try to look at relationships between supporting variables
 as well.
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r Geom point: Volatile acidity echo=FALSE, Bivariate_Plots}
 ggplot(wine, aes(volatile.acidity, quality)) +
   scale_x_continuous(lim = c(0, quantile(wine$volatile.acidity, 0.99))) +
   scale_y_continuous(lim = c(0, quantile(wine$quality, 0.99))) +
   geom_point(fill = I('#F79420'), color = I('black'), shape = 21)
 ```
+
+It looks like there might be a pattern here with this geom_point graph but it's
+a little hard to discern.  Lets try using quality as a factor and use that to
+generate a boxplot instead.
+
 ```{r Bivariate Volatile acidity boxplots}
 ggplot(wine, aes( factor(quality), volatile.acidity, color=factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
@@ -264,27 +288,63 @@ ggplot(wine, aes( factor(quality), volatile.acidity, color=factor(quality))) +
 
 ```
 
+This makes it much easier to see the pattern.  As quality rating increases both
+the median and mean volatile acidity decreases. This is true for each rating
+with the exception of quality rating 8 for which there was very little data.
+
+```{r quality-volatile.acidity correlation}
+cor(wine$quality, wine$volatile.acidity)
+```
+
+This confirms the plot findings showing a medium-strength negative correlation
+between quality and volatile acidity.
+
+
 ```{r Bivariate Citric acid boxplots}
-ggplot(wine, aes( factor(quality), citric.acid, color=factor(quality))) +
+ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
   stat_summary(fun.y = mean,
-               geom = 'point',
-               shape = 8) 
-
+  geom = 'point',
+  shape = 8) 
 ```
+
+Here we see another clear pattern.  In this case as citric acid increases the
+factor increases too.
+
+```{r quality-}
+cor(wine$quality, wine$citric.acid)
+```
+
+This seems to indicate a small positive correlation between citric acid and
+quality
 
 ```{r Bivariate Free Sulpher dioxide boxplots}
 ggplot(wine, aes( factor(quality), free.sulfur.dioxide,
-                  color=factor(quality))) +
-  geom_boxplot(outlier.colour = "red") +
+                  color=colorRampPalette(c("blue", "red")))) +
+  geom_boxplot(outlier.colour = "red" ) +
   stat_summary(fun.y = mean,
                geom = 'point',
                shape = 8) 
 
 ```
 
+This graph is perhaps the most interesting so far. Free sulphur dioxide seems
+positively correlated with quality up until rank 5, at which point it trends
+downward.  This seems to coincide with wineQualityInfo description which stated:
+
+> "...at free SO2 concentrations     over 50 ppm, SO2 becomes evident in the
+nose and taste of wine"
+
+However since the relation doesn't look linear the correlation coefficient may
+not give us the full picture.
 
 ```{r}
+cor(wine$quality, wine$free.sulfur.dioxide)
+```
+
+This is a case where the relationship coefficient seems to have failed us.
+
+```{r Creation wine.by_quality dataframe}
 wine.by_quality <- wine %>%
   group_by(quality) %>%
   summarise(mean_volatile.acidity = mean(volatile.acidity),
@@ -294,10 +354,7 @@ wine.by_quality <- wine %>%
   arrange(quality)
 head(wine.by_quality, 20)
 ```
-```{r}
-cor(wine$quality, wine$volatile.acidity)
-```
-```{r}
+```{r ggpairs graph(all bivariate graphs)}
 # No need sample with a seed for this size of sample
 ggpairs(wine, 
         lower = list(continuous = wrap("points", shape = I('.'))),
@@ -313,11 +370,27 @@ here. Use the questions below to guide your discussion.
 investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
 
+We saw three different types of relationships:
+
+* medium-strength, negative linear between quality and volatile acidity
+* low-strength, positive linear between quality and citric acid
+* non-linear relationship 
+
 ### Did you observe any interesting relationships between the other features \
 (not the main feature(s) of interest)?
 
+From glancing over the ggpairs output it was interesting to note the
+high-strength positive correlation between citric acid and fixed acidity,
+in constrast to it's high strength negative correlation with volatile acidity.
+
+
 ### What was the strongest relationship you found?
 
+The strongest relationship from the points of interest was volitile acidity
+to quality.
+
+From The entire dataset a high-strength negative correlation of -0.683 for 
+'fixed acidity' and 'pH' seemed to be the strongest correlation I saw.
 
 # Multivariate Plots Section
 
@@ -328,8 +401,51 @@ create here are justified by the plots you explored in the previous section. If
 you plan on creating any mathematical models, this is the section where you
 will do that.
 
-```{r echo=FALSE, Multivariate_Plots}
+```{r citric.acid by volatile.acidity and quality echo=FALSE, Multivariate_Plots}
 
+# install and load the RColorBrewer package
+library("RColorBrewer", lib.loc="~/Anaconda3/envs/py37pipped/Lib/R/library")
+
+ggplot(aes(x = volatile.acidity, y = citric.acid, colour = factor(quality)), data = wine) + 
+  geom_point(alpha = 1, size = 2) +
+  scale_color_brewer(type = 'div',
+    guide = guide_legend(title = 'quality', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +  
+  scale_x_continuous( limits = c(0.15, 1.25),
+     breaks = seq(0.15, 1.5, .25)) + 
+  scale_y_continuous( limits = c(-.1, .8),
+     breaks = seq(0, .8, .1)) + 
+  ggtitle('citric.acid by volatile.acidity and quality')
+```
+```{r}
+ggplot(aes(x = free.sulfur.dioxide, y = badfso,
+           colour = factor(quality)), data = wine) + 
+  geom_point(alpha = 1, size = 1.5) +
+  scale_color_brewer(type = 'div',
+    guide = guide_legend(title = 'Above 50ppm', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +  
+  # scale_x_continuous( limits = c(0.15, 1.25),
+  #    breaks = seq(0.15, 1.5, .25)) + 
+  # scale_y_continuous( limits = c(-.1, .8),
+  #    breaks = seq(0, .8, .1)) + 
+  ggtitle('Free sulfur oxide > 50 ppm')
+```
+```{r}
+ggplot(aes(x = free.sulfur.dioxide, y = badfso,
+           colour = factor(quality)), data = wine) + 
+  geom_point(alpha = 1, size = 1.5) +
+  scale_color_brewer(type = 'div',
+    guide = guide_legend(title = 'Above 50ppm', reverse = T,
+    override.aes = list(alpha = 1, size = 2))) +  
+  # scale_x_continuous( limits = c(0.15, 1.25),
+  #    breaks = seq(0.15, 1.5, .25)) + 
+  # scale_y_continuous( limits = c(-.1, .8),
+  #    breaks = seq(0, .8, .1)) + 
+  ggtitle('Free sulfur oxide > 50 ppm')
+```
+```{r}
+ggplot(wine, aes(free.sulfur.dioxide, total.sulfur.dioxide)) +
+geom_point(aes(color = factor(quality)), stat = 'summary', fun.y = median)
 ```
 
 # Multivariate Analysis
