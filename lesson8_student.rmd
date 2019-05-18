@@ -263,6 +263,7 @@ m2 <- update(m1, ~ . + carat)
 m3 <- update(m2, ~ . + cut)
 m4 <- update(m3, ~ . + color)
 m5 <- update(m4, ~ . + clarity)
+# produce a table of estimates for several models
 mtable(m1, m2, m3, m4, m5)
 ```
 
