@@ -9,6 +9,7 @@ editor_options:
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# These lines may need to be uncommented if the packages aren't installed
 # install.packages('GGally')
 # install.packages('scales')
 # install.packages('memisc')
@@ -35,7 +36,7 @@ wine <- read.csv('winequalityreds.csv', sep = ',')
 wine <- select(wine,-c(X))
 ```
 
-This report explores a dataset containing chemical attributes and quality
+This report explores a data set containing chemical attributes and quality
 scores for approximately 1600 samples of red wine.
 
 # Univariate Plots Section
@@ -48,7 +49,7 @@ str(wine)
 summary(wine)
 ```
 
-Our dataset consists of 12 variables with ~1600 observations.
+Our data set consists of 12 variables with ~1600 observations.
 
 The 'X' variable is merely the row number, so it was dropped after import.
 The quality is a median of >= 3 expert's ratings
@@ -58,37 +59,62 @@ wine$badfso <- factor(wine$free.sulfur.dioxide > 50)
 ```
 
 
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# use ggplot2 to create histogram
 ggplot(aes(quality), data = wine) +
   geom_histogram(binwidth = 1, fill = '#5760AB') +
   ggtitle('Quality') +
   scale_x_continuous(breaks = seq(3, 8, 1), limits = c(2, 9))
 ```
 
+Unfortunately the quality is somewhat imbalanced. Perhaps applying a log10
+transform will help.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(quality), data = wine) +
-  geom_histogram(binwidth = .08, fill = 'brown') +
+  geom_histogram(binwidth = 1, fill = 'brown') +
   ggtitle('Quality log10') +
-  scale_x_log10()
+  scale_y_log10()
 ```
 
-This dataset lacks categorical variables and the input variables are fairly
-granular. Couple of noteworth exceptions
+Ahh, this transformed quality histogram looks much more normal.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(fixed.acidity), data = wine) +
-  geom_histogram(binwidth = .1, fill = '#5760AB') +
-  ggtitle('Fixed Acidity') +
-  scale_x_continuous(breaks = seq(5, 15, 1), limits = c(5, 15))
+  geom_histogram(binwidth = .5, fill = '#5760AB') +
+  ggtitle('Fixed Acidity Continuous') +
+  scale_x_continuous(breaks = seq(5, 15, 1), limits = c(4, 15))
 ```
+
+This fixed acidity histogram looks distribution looks fairly normal without a
+log transform.  Lets try one anyway.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(fixed.acidity), data = wine) +
+  geom_histogram(binwidth = .04, fill = '#5760AB') +
+  ggtitle('Fixed Acidity Log10') +
+  scale_x_log10()
+```
+
+Looks a bit more normal, but not significantly so.
+
+```{r}
+qplot(data = wine, x = volatile.acidity, bins = 50)
+```
+
+If we omit the low counts to the right this volatile acidity histogram looks
+pretty normalized.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(volatile.acidity), data = wine) +
   geom_histogram(binwidth = .05, fill = '#5760AB') +
-  ggtitle('Fixed Acidity') +
+  ggtitle('Volatile Acidity') +
   scale_x_continuous(breaks = seq(0.1, 1.3, .1), limits = c(.1, 1.3)) 
 ```
+
+Yes, omitting those low counts seems to help the shape.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(citric.acid), data = wine) +
   geom_histogram(binwidth = .01, fill = '#5760AB') +
@@ -96,37 +122,102 @@ ggplot(aes(citric.acid), data = wine) +
   scale_x_continuous(breaks = seq(0.0, 0.8, .1), limits = c(-.1, .8)) 
 ```
 
+This long tailed histogram of citric acid seems to have a large bin of samples
+with values with less than .01 grams/L of citric acid. My guess would be that
+citric acid might be an additive that some winemakers choose to omit when
+crafting their wine.
+
+Also see a smaller spike ~.5 which could potentially be a result of less precise
+measurements or maybe a value that some winemakes aime to have in their wine.
+
+```{r}
+ggplot(aes(wine$citric.acid ), data = wine) +
+  geom_histogram(binwidth = 0.04, fill = '#5760AB') +
+  ggtitle('Citric Acid') +
+  scale_x_log10(breaks=seq(.0, 1, .05), limits= c(.2, .9)) 
+  
+```
+
+Transforming this Citric Acid histogram seems to confirm our suspicions, showing
+a bimodal graph with a couple peaks at .25, and .5.
+
+```{r}
+qplot(data= wine, x = residual.sugar, bins = 50)
+```
+
+Initialy this residual sugar looks somewhat longtailed, but limiting the x axis
+should give us a more normal shape
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(residual.sugar), data = wine) +
-  geom_histogram(binwidth = .05, fill = '#5760AB') +
+  geom_histogram(binwidth = .25, fill = '#5760AB') +
   ggtitle('Residual Sugar') +
-  scale_x_log10(breaks = seq(1, 8, 1), limits = c(1, 8)) 
+  scale_x_continuous(breaks = seq(1, 4, .25), limits = c(1, 3.75)) 
 ```
+
+That looks a bit better
+
+```{r}
+qplot(data = wine, x = chlorides, bins = 50)
+```
+
+This chlorides histogram looks like it would be normal if we remove some of
+these potential outliers.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(chlorides), data = wine) +
   geom_histogram(binwidth = .01, fill = '#5760AB') +
   ggtitle('Chlorides') +
-  scale_x_continuous(breaks = seq(0, .2, .02), limits = c(0.01, .2)) 
+  scale_x_continuous(breaks = seq(0, .16, .01), limits = c(0.02, .14)) 
 ```
+
+This looks limit helps confirm a normal shape.
+
+
+```{r}
+qplot(data = wine, x = free.sulfur.dioxide, bins = 20)
+```
+
+This free sulfur dioxide appears long-tailed so we'll try transforming it to
+better understand it's shape.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(free.sulfur.dioxide), data = wine) +
-  geom_histogram(binwidth = 1, fill = '#5760AB') +
-  ggtitle('Free Sulfur Dioxide') +
-  scale_x_continuous(breaks = seq(0, 50, 5), limits = c(0, 50)) 
+  geom_histogram(binwidth = .2, fill = '#5760AB') +
+  ggtitle('Free Sulfur Dioxide scale_x_log10') +
+  scale_x_log10(limits = c(1,100))
 ```
+
+This scale helps use see it's unimodal distribution.
+
+
+```{r}
+qplot(data = wine, x = total.sulfur.dioxide, bins = 20)
+```
+
+Just as with free sulfur dioxide we see a long tailed histogram. Lets try
+another log_x_10 layer.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(total.sulfur.dioxide), data = wine) +
-  geom_histogram(binwidth = 1, fill = '#5760AB') +
-  ggtitle('Total Sulfur Dioxide') +
-  scale_x_continuous(breaks = seq(0, 160, 10), limits = c(0, 160)) 
+  geom_histogram(binwidth = .2, fill = '#5760AB') +
+  ggtitle('Total Sulfur Dioxide scale_x_log10') +
+  scale_x_log10()
 ```
+
+Once again applying this scale_x_log10 helps us see the normal, unimodal shape.
+
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(density), data = wine) +
   geom_histogram(binwidth = .001, fill = '#5760AB') +
   ggtitle('density') +
   scale_x_continuous(breaks = seq(0.990, 1.04, .002), limits = c(.990, 1.004)) 
 ```
+
+This density histogram already shows a normal shape, doesn't seem to need a
+log10 scale.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(pH), data = wine) +
   geom_histogram(binwidth = .1, fill = '#5760AB') +
@@ -134,24 +225,47 @@ ggplot(aes(pH), data = wine) +
   scale_x_continuous(breaks = seq(2.8, 3.8, .4), limits = c(2.8, 3.8)) 
 ```
 
+'pH' shows a normal shape for it's histogram.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(sulphates), data = wine) +
   geom_histogram(binwidth = .05, fill = '#5760AB') +
-  ggtitle('Sulphates') +
+  ggtitle('Sulfates') +
   scale_x_continuous(breaks = seq(.25, 1.25, .25), limits = c(.25, 1.25)) 
 ```
+
+Sulfates looks fairly normal here.
+
+```{r}
+qplot(data = wine, x = alcohol, binwidth = 1) +
+  scale_x_continuous(breaks = seq(7, 16, 1))
+```
+
+Could argue this alcohol histogram is longtailed or normal I think.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(alcohol), data = wine) +
-  geom_histogram(binwidth = .1, fill = '#5760AB') +
-  ggtitle('Alcohol') + 
-  scale_x_continuous(breaks = seq(9, 13, 1), limits = c(9, 13)) 
+  geom_histogram(binwidth = .05, fill = '#5760AB') +
+  ggtitle('Alcohol scale_x_sqrt') + 
+  scale_x_sqrt()
 ```
+
+Applying a square root scale doesn't seem to change the shape.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(alcohol), data = wine) +
+  geom_histogram(binwidth = .01, fill = '#5760AB') +
+  ggtitle('Alcohol') + 
+  scale_x_log10(breaks = seq(8, 14, .5), limits=c(8.5, 13.5))
+```
+
+Looks to be a somewhat bidmodal, possibly multi-modal shape here.  
 
 ### What is the structure of your dataset?
 
-There are 15,999 wine samples in the dataset with 12 features(fixed acidity,
+There are 15,999 wine samples in the data set with 12 features(fixed acidity,
 volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide,
-total sulfur dioxide, density, pH, sulphates, alchohol, and quality).
+total sulfur dioxide, density, pH, sulfates, alcohol, and quality).
 Quality is an output variable of integer type.  The remaining 11 variables are
 input variables of numeric type.
 
@@ -165,7 +279,7 @@ The vast majority range from 5-to-7
 
 ### What is/are the main feature(s) of interest in your dataset?
 
-From this dataset I am most interested in the 'quality' variable and how it 
+From this data set I am most interested in the 'quality' variable and how it 
 interacts with:
 
 * volatile acidity
@@ -190,8 +304,8 @@ nose and taste of wine"
 The 'residual sugar' variable might also have been of interest since it is an
 indicator of sweetness.  Seeing if there was a perceived quality difference for
 sweet or dry red wines might have been interesting.
-Unfortunately all the wines in the dataset fell far below the 45 g/L(dm^3), 
-so all obervations were of dry wines.
+Unfortunately all the wines in the data set fell far below the 45 g/L(dm^3), 
+so all observations were of dry wines.
 
 ### Did you create any new variables from existing variables in the dataset?
 
@@ -205,7 +319,7 @@ with thresholds that define a wine characteristic (sweet/dry, acidic/basic,
 Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
 
-Only tidying I did was to remove the 'X' field as it was redudant with R's own
+Only tidying I did was to remove the 'X' field as it was redundant with R's own
 row names.
 
 
@@ -224,7 +338,7 @@ ggplot(wine, aes(volatile.acidity, quality)) +
 
 It looks like there might be a pattern here with this geom_point graph but it's
 a little hard to discern.  Lets try using quality as a factor and use that to
-generate a boxplot instead.
+generate a box plot instead.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(wine, aes(factor(quality), volatile.acidity, color = factor(quality))) +
@@ -275,7 +389,7 @@ ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
                  
 ```
 
-This graph is perhaps the most interesting so far. Free sulphur dioxide seems
+This graph is perhaps the most interesting so far. Free sulfur dioxide seems
 positively correlated with quality up until rank 5, at which point it trends
 downward.  This seems to coincide with wineQualityInfo description which stated:
 
@@ -295,7 +409,7 @@ The quality attribute takes on so few values it effectively acts like an
 ordered factor.  With that in mind we'll add a factor attribute based on quality
 below.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 wine$fQuality <- factor(wine$quality)
 ```
 
@@ -317,12 +431,13 @@ axisLabels = 'internal'
 )
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data = wine,  x = volatile.acidity) +
-  facet_wrap( ~ fQuality)
+  facet_wrap( ~ fQuality) +
+  scale_y
 ```
 
-Unfortuneately this faceted plot isn't very useful since the classes aren't
+Unfortunately this faceted plot isn't very useful since the classes aren't
 balanced.
 
 # Bivariate Analysis
@@ -338,24 +453,19 @@ We saw three different types of relationships:
 
 From glancing over the ggpairs output it was interesting to note the
 high-strength positive correlation between citric acid and fixed acidity,
-in constrast to it's high strength negative correlation with volatile acidity.
+in contrast to it's high strength negative correlation with volatile acidity.
 
 ### What was the strongest relationship you found?
 
-The strongest relationship from the points of interest was volitile acidity
+The strongest relationship from the points of interest was volatile acidity
 to quality.
 
-From The entire dataset a high-strength negative correlation of -0.683 for 
+From The entire data set a high-strength negative correlation of -0.683 for 
 'fixed acidity' and 'pH' seemed to be the strongest correlation I saw.
 
 # Multivariate Plots Section
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-
-# install and load the RColorBrewer package
-# library("RColorBrewer", lib.loc="~/Anaconda3/envs/py37pipped/Lib/R/library")
-
 ggplot(aes(
 x = volatile.acidity,
 y = citric.acid,
@@ -376,7 +486,7 @@ ggtitle('citric.acid by volatile.acidity and quality')
 ```
 
 Presumably, citric acid would account for some of the volatile acidity.
-However their effect on quality is the opposite.  As seen in this scatterplot
+However their effect on quality is the opposite.  As seen in this scatter plot
 their is a cluster of high quality samples with low volatile acidity and high
 citric acid values.
 
@@ -386,7 +496,6 @@ ggplot(aes(
   y = badfso,
   colour = factor(quality)
   ), data = wine) +
-  # geom_point(alpha = .5, size = 5.5) +
   geom_point(
   aes(color = factor(quality)),
   stat = 'summary',
@@ -394,13 +503,6 @@ ggplot(aes(
   size = 5,
   alpha = .8
   ) +
-  # scale_color_brewer(type = 'div',
-  #   guide = guide_legend(title = 'Above 50ppm', reverse = T,
-  #   override.aes = list(alpha = 1, size = 2))) +
-  # scale_x_continuous( limits = c(0.15, 1.25),
-  #    breaks = seq(0.15, 1.5, .25)) +
-  # scale_y_continuous( limits = c(-.1, .8),
-  #    breaks = seq(0, .8, .1)) +
   ggtitle('Free sulfur oxide > 50 ppm')
 ```
 
@@ -435,40 +537,36 @@ ggplot(aes(
   colour = factor(quality)
   ),
   data = wine) +
-  # geom_point(alpha = .5, size = 5.5) +
   geom_line(
   aes(color = factor(quality)),
   stat = 'summary',
   fun.y = median,
-  size = 2,
-  alpha = .8
+  size = 1,
+  alpha = .5
   ) +
   scale_color_brewer(
   type = 'qual',
   guide = guide_legend(
-  title = 'Above 50ppm',
+  title = 'Quality ',
   reverse = T,
   override.aes = list(alpha = 1, size = 2)
   )
   ) +
-  # scale_x_continuous( limits = c(0.15, 1.25),
-  #    breaks = seq(0.15, 1.5, .25)) +
-  # scale_y_continuous( limits = c(-.1, .8),
-  #    breaks = seq(0, .8, .1)) +
-  ggtitle('citric acid by free SO2 and quality')
+  ggtitle('Citric Acid by Free SO2 and Quality')
 ```
+
 Not seeing a clear relationship between between these three variables.
 
 
 # Multivariate Analysis
 
-### Talk about some of the relationships you observed in this part of the 
+### Talk about some of the relationships you observed in this part of the \ 
 ### investigation. Were there features that strengthened each other in terms of 
 ### looking at your feature(s) of interest?
 
 The first plot in multi-variate analysis 
 Presumably, citric acid would account for some of the volatile acidity.
-However their effect on quality is the opposite.  As seen in this scatterplot
+However their effect on quality is the opposite.  As seen in this scatter plot
 their is a cluster of high quality samples with low volatile acidity and high
 citric acid values.
 
@@ -480,7 +578,7 @@ taste quality.
 
 Had trouble finding notable multivariate interactions between our values of
 interest.  Nothing surprising that went against the statements made in the
-description of values provided in the dataset description.
+description of values provided in the data set description.
 
 ### OPTIONAL: Did you create any models with your dataset? 
 
@@ -490,7 +588,7 @@ No models were created.
 
 # Final Plots and Summary
 
-Ultimately it seems the bivariate plots we created provided the most value.
+Ultimately, it seems the bi variate plots we created provided the most value.
 
 ### Plot One
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -498,11 +596,20 @@ ggplot(wine, aes(factor(quality), volatile.acidity, color = factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
   stat_summary(fun.y = mean,
   geom = 'point',
-  shape = 8) 
+  shape = 8) +
+  labs(
+    title = "Volatile Acidity by Quality Boxplot",
+    x = "Quality rating (score between 0 and 10)", 
+    y = "volatile acidity (acetic acid - g / dm^3)",
+    colour = "Quality"
+  )
 ```
 
 ### Description One
 
+Here we see a distinct trend, as volatile acidity goes down, the quality rating
+goes up.  Keeping the volatile acidity low in wine looks to be a key component
+of receiving a high quality rating.
 
 ### Plot Two
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -521,6 +628,9 @@ ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
 
 ### Description Two
 
+Once again we see another clear trend.  A higher citric acid level in wine seems
+to directly affect it's quality rating. In this case we see the relationship is
+positive and linear.
 
 ### Plot Three
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -540,15 +650,37 @@ ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
 
 ### Description Three
 
+Here we see a non-linear relationship between Free Sulfur Oxide and Quality.
+This was in my mind the most interesting observation.  It seems that Free Sulfur
+oxide acts as a 'double-edged blade'.  It helps prevent microbial growth and
+oxidation in wine, key factors affecting quality. The downside being that if the
+levels become too high it affects taste and nose(smell).
+
+This is made very evident in this box plot figure.  The lowest scores show the
+lowest levels of FSO2.  As a result these wines likely experienced cases of
+oxidation and/or microbial growth adversely affecting their quality.
+
+The medium quality scores(5 and 6), had the highest FSO2 concentrations. It
+seems most likely that in this case that oxidation and microbial growth were
+largely prevented, helping these wine to score higher quality scores.  FS02's
+impact on taste and nose at high levels likely prevented them from achieving the
+highest quality scores.
+
+The highest quality scores showed lower levels of FS02 than their mid-tier
+counterparts.  Likely that at the highest quality level alternate methods to
+prevent oxidation and microbial growth were used.  Presumably a more expensive
+process than simply keeping FS02 high.
+
 ------
 
 # Reflection
 
-Ultimately this dataset seemed to not be great for multivariate analysis. Had
-the dataset contained info like grape types, wine brand, wine selling price, etc
-I feel much more interesting analysis could've been done.  Regardless, we did
-see some interesting bivariate relationships between our input variables of
-interest and their effect on the output variable of Quality.
+Ultimately this data set seemed to not be great for multivariate analysis. Had
+the data set contained information like grape types, wine brand, wine selling price, etc
+I feel much more interesting analysis could have been done.  Regardless, we did
+see some interesting bi variate relationships between our input variables of
+interest and their effect on the output variable 'quality'.
 
-If I were to do further analyis I'd try to wrangle a bigger set, with some of
-the afformentioned attributes.  Then we could draw some conclusions between
+If I were to do further analysis I'd try to wrangle a bigger set, with some of
+the aforementioned attributes.  Then I could begin to conclusions on things
+like 'highest quality wine brands' or 'best value wines'.
