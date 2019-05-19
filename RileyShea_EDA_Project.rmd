@@ -130,7 +130,7 @@ crafting their wine.
 Also see a smaller spike ~.5 which could potentially be a result of less precise
 measurements or maybe a value that some winemakers aim to have in their wine.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(wine$citric.acid ), data = wine) +
   geom_histogram(binwidth = 0.04, fill = '#5760AB') +
   ggtitle('Citric Acid') +
@@ -141,7 +141,7 @@ ggplot(aes(wine$citric.acid ), data = wine) +
 Transforming this Citric Acid histogram seems to confirm our suspicions, showing
 a bi modal graph with a couple peaks at .25, and .5.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data= wine, x = residual.sugar, bins = 50)
 ```
 
@@ -157,7 +157,7 @@ ggplot(aes(residual.sugar), data = wine) +
 
 That looks a bit better
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data = wine, x = chlorides, bins = 50)
 ```
 
@@ -174,7 +174,7 @@ ggplot(aes(chlorides), data = wine) +
 This looks limit helps confirm a normal shape.
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data = wine, x = free.sulfur.dioxide, bins = 20)
 ```
 
@@ -191,7 +191,7 @@ ggplot(aes(free.sulfur.dioxide), data = wine) +
 This scale helps use see it's uni modal distribution.
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data = wine, x = total.sulfur.dioxide, bins = 20)
 ```
 
@@ -236,7 +236,7 @@ ggplot(aes(sulphates), data = wine) +
 
 Sulfates looks fairly normal here.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data = wine, x = alcohol, binwidth = 1) +
   scale_x_continuous(breaks = seq(7, 16, 1))
 ```
@@ -414,7 +414,16 @@ below.
 wine$fQuality <- factor(wine$quality)
 ```
 
-Quick look over our variables of interest to see if we missed anything
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+qplot(data = wine,  x = volatile.acidity) +
+  facet_wrap( ~ fQuality, scales="free_y") 
+```
+
+Unfortunately this faceted plot doesn't seem very useful partly because the
+classes(quality scores) aren't balanced.
+
+Below we'll use gg pairs to generate a grid of pairwise plots.
+Quickly looking over our variables of interest to see if we missed anything
 important.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -435,13 +444,8 @@ axisLabels = 'internal'
 )
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-qplot(data = wine,  x = volatile.acidity) +
-  facet_wrap( ~ fQuality, scales="free_y") 
-```
+Nothing stands out, but this maybe useful for reference later.
 
-Unfortunately this faceted plot doesn't seem very useful since the
-classes(quality scores) aren't balanced.
 
 # Bivariate Analysis
 
@@ -466,7 +470,7 @@ to quality.
 From The entire data set a high-strength negative correlation of -0.683 for 
 'fixed acidity' and 'pH' seemed to be the strongest correlation I saw.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 cor(wine$fixed.acidity, wine$pH)
 ```
 
@@ -501,18 +505,23 @@ citric acid values.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(
   x = free.sulfur.dioxide,
-  y = badfso,
-  colour = factor(quality)
+  y = badfso
+  # colour = factor(quality)
   ), data = wine) +
   geom_point(
   aes(color = factor(quality)),
   stat = 'summary',
   fun.y = median,
   size = 5,
-  alpha = .8
+  alpha = .75,
+  position = 'jitter'
   ) +
   ggtitle('Free sulfur dioxide > 50 ppm')
 ```
+
+
+In order to see all the points here we use position with the 'jitter' value.
+Alpha was also used to help give the points some transparency.
 
 This confirms what we suspected earlier. The free sulfur dioxide increases
 quality up preserving freshness, however if the levels become too high it
