@@ -78,7 +78,7 @@ ggplot(aes(quality), data = wine) +
   scale_y_log10()
 ```
 
-Ahh, this transformed quality histogram looks much more normal.
+This transformed quality histogram looks much more normal.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(fixed.acidity), data = wine) +
@@ -128,7 +128,7 @@ citric acid might be an additive that some winemakers choose to omit when
 crafting their wine.
 
 Also see a smaller spike ~.5 which could potentially be a result of less precise
-measurements or maybe a value that some winemakes aime to have in their wine.
+measurements or maybe a value that some winemakers aim to have in their wine.
 
 ```{r}
 ggplot(aes(wine$citric.acid ), data = wine) +
@@ -139,14 +139,14 @@ ggplot(aes(wine$citric.acid ), data = wine) +
 ```
 
 Transforming this Citric Acid histogram seems to confirm our suspicions, showing
-a bimodal graph with a couple peaks at .25, and .5.
+a bi modal graph with a couple peaks at .25, and .5.
 
 ```{r}
 qplot(data= wine, x = residual.sugar, bins = 50)
 ```
 
-Initialy this residual sugar looks somewhat longtailed, but limiting the x axis
-should give us a more normal shape
+Initially this residual sugar looks somewhat long tailed, but limiting the
+x axis should give us a more normal shape
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(residual.sugar), data = wine) +
@@ -188,7 +188,7 @@ ggplot(aes(free.sulfur.dioxide), data = wine) +
   scale_x_log10(limits = c(1,100))
 ```
 
-This scale helps use see it's unimodal distribution.
+This scale helps use see it's uni modal distribution.
 
 
 ```{r}
@@ -205,7 +205,7 @@ ggplot(aes(total.sulfur.dioxide), data = wine) +
   scale_x_log10()
 ```
 
-Once again applying this scale_x_log10 helps us see the normal, unimodal shape.
+Once again applying this scale_x_log10 helps us see the normal, uni modal shape.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -241,7 +241,7 @@ qplot(data = wine, x = alcohol, binwidth = 1) +
   scale_x_continuous(breaks = seq(7, 16, 1))
 ```
 
-Could argue this alcohol histogram is longtailed or normal I think.
+Could argue this alcohol histogram is long tailed or normal I think.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(aes(alcohol), data = wine) +
@@ -259,7 +259,7 @@ ggplot(aes(alcohol), data = wine) +
   scale_x_log10(breaks = seq(8, 14, .5), limits=c(8.5, 13.5))
 ```
 
-Looks to be a somewhat bidmodal, possibly multi-modal shape here.  
+Looks to be a somewhat bi modal, possibly multi-modal shape here.  
 
 ### What is the structure of your dataset?
 
@@ -292,7 +292,7 @@ levels can lead to an unpleasant, vinegar taste"
 > "citric acid: found in small quantities, citric acid can add 'freshness'
 and flavor to wines"
 
-* free sulfur oxide
+* free sulfur dioxide
 
 > "...at free SO2 concentrations  over 50 ppm, SO2 becomes evident in the
 nose and taste of wine"
@@ -305,7 +305,7 @@ The 'residual sugar' variable might also have been of interest since it is an
 indicator of sweetness.  Seeing if there was a perceived quality difference for
 sweet or dry red wines might have been interesting.
 Unfortunately all the wines in the data set fell far below the 45 g/L(dm^3), 
-so all observations were of dry wines.
+so all observations were by definition dry wines.
 
 ### Did you create any new variables from existing variables in the dataset?
 
@@ -315,12 +315,12 @@ with thresholds that define a wine characteristic (sweet/dry, acidic/basic,
 
 
 
-### Of the features you investigated, were there any unusual distributions? \
-Did you perform any operations on the data to tidy, adjust, or change the form \
-of the data? If so, why did you do this?
+### Of the features you investigated, were there any unusual distributions? 
+### Any operations on the data to tidy, adjust, or change the form 
+### of the data? If so, why did you do this?
 
-Only tidying I did was to remove the 'X' field as it was redundant with R's own
-row names.
+Only change I made was to remove the 'X' field as it was redundant with R's own
+row names.  The source described the data as being tidy already.
 
 
 # Bivariate Plots Section
@@ -391,7 +391,8 @@ ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
 
 This graph is perhaps the most interesting so far. Free sulfur dioxide seems
 positively correlated with quality up until rank 5, at which point it trends
-downward.  This seems to coincide with wineQualityInfo description which stated:
+downward.  This seems to coincide with wineQualityInfo.txt description
+which stated:
 
 > "...at free SO2 concentrations over 50 ppm, SO2 becomes evident in the
 nose and taste of wine"
@@ -413,6 +414,9 @@ below.
 wine$fQuality <- factor(wine$quality)
 ```
 
+Quick look over our variables of interest to see if we missed anything
+important.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # No need sample with a seed for this size of sample
 ggpairs(
@@ -433,12 +437,11 @@ axisLabels = 'internal'
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 qplot(data = wine,  x = volatile.acidity) +
-  facet_wrap( ~ fQuality) +
-  scale_y
+  facet_wrap( ~ fQuality, scales="free_y") 
 ```
 
-Unfortunately this faceted plot isn't very useful since the classes aren't
-balanced.
+Unfortunately this faceted plot doesn't seem very useful since the
+classes(quality scores) aren't balanced.
 
 # Bivariate Analysis
 
@@ -446,7 +449,7 @@ We saw three different types of relationships:
 
 * medium-strength, negative linear between quality and volatile acidity
 * low-strength, positive linear between quality and citric acid
-* non-linear relationship between free sulfur oxide and quality
+* non-linear relationship between free sulfur dioxide and quality
 
 ### Did you observe any interesting relationships between the other features 
 ### (not the main feature(s) of interest)?
@@ -462,6 +465,11 @@ to quality.
 
 From The entire data set a high-strength negative correlation of -0.683 for 
 'fixed acidity' and 'pH' seemed to be the strongest correlation I saw.
+
+```{r}
+cor(wine$fixed.acidity, wine$pH)
+```
+
 
 # Multivariate Plots Section
 
@@ -503,13 +511,13 @@ ggplot(aes(
   size = 5,
   alpha = .8
   ) +
-  ggtitle('Free sulfur oxide > 50 ppm')
+  ggtitle('Free sulfur dioxide > 50 ppm')
 ```
 
-This confirms what we suspected earlier. The free sulfur oxide increases quality
-up preserving freshness, however if the levels become too high it affects the
-taste quality. None of the samples with free S02 over 50ppm achieved quality of
-8.  
+This confirms what we suspected earlier. The free sulfur dioxide increases
+quality up preserving freshness, however if the levels become too high it
+affects the taste quality. None of the samples with free S02 over 50ppm
+achieved quality of 8.  
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(wine, aes(free.sulfur.dioxide, total.sulfur.dioxide)) +
@@ -555,30 +563,37 @@ ggplot(aes(
   ggtitle('Citric Acid by Free SO2 and Quality')
 ```
 
-Not seeing a clear relationship between between these three variables.
+Not seeing a clear relationship between between these variables.  This makes
+sense because citric acid and Free sulfur dioxide don't seem to be
+related chemically.
 
 
 # Multivariate Analysis
 
-### Talk about some of the relationships you observed in this part of the \ 
+### Talk about some of the relationships you observed in this part of the  
 ### investigation. Were there features that strengthened each other in terms of 
 ### looking at your feature(s) of interest?
 
-The first plot in multi-variate analysis 
-Presumably, citric acid would account for some of the volatile acidity.
-However their effect on quality is the opposite.  As seen in this scatter plot
-their is a cluster of high quality samples with low volatile acidity and high
-citric acid values.
+The first plot in multi-variate analysis I had expected to see citric acid
+go up as volatile acidity went up.  I didn't really see this though. It did
+reinforce what we saw in our bi variate box plots with high citric acid and low
+volatile acidity being beneficial to quality
 
-This confirms what we suspected earlier. The free sulfur oxide increases quality
-up preserving freshness, however if the levels become too high it affects the
-taste quality.  
+In the second multi variate scatter plot we saw that none of the top quality
+samples had a free sulfur dioxide over 50ppm.
+
+In our third multivariate scatter plot we didn't see a clear relationship
+between all three variables.  So a bit of a dead end there.
+
+The final multi-variate plot used a line plot, attempting to find a relationship
+between citric acid, free sulfur dioxide, and quality.  Was unable to identify
+any distinct trends.
 
 ### Were there any interesting or surprising interactions between features?
 
 Had trouble finding notable multivariate interactions between our values of
 interest.  Nothing surprising that went against the statements made in the
-description of values provided in the data set description.
+description of values provided in the data set description text file.
 
 ### OPTIONAL: Did you create any models with your dataset? 
 
@@ -588,7 +603,8 @@ No models were created.
 
 # Final Plots and Summary
 
-Ultimately, it seems the bi variate plots we created provided the most value.
+Ultimately, it seems the bi variate plots we created provided the most relevant
+insights.
 
 ### Plot One
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -641,16 +657,16 @@ ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
                  geom = 'point',
                  shape = 8) +
                  labs(
-                 title = "Free Sulfur Oxide by Quality Boxplot",
+                 title = "Free Sulfur Dioxide by Quality Boxplot",
                  x = "Quality rating (score between 0 and 10)",
-                 y = "Free Sulfur Oxide (mg / dm^3)",
+                 y = "Free Sulfur Dioxide (mg / dm^3)",
                  colour = "Quality"
                  )
 ```
 
 ### Description Three
 
-Here we see a non-linear relationship between Free Sulfur Oxide and Quality.
+Here we see a non-linear relationship between Free Sulfur Dioxide and Quality.
 This was in my mind the most interesting observation.  It seems that Free Sulfur
 oxide acts as a 'double-edged blade'.  It helps prevent microbial growth and
 oxidation in wine, key factors affecting quality. The downside being that if the
@@ -676,11 +692,12 @@ process than simply keeping FS02 high.
 # Reflection
 
 Ultimately this data set seemed to not be great for multivariate analysis. Had
-the data set contained information like grape types, wine brand, wine selling price, etc
-I feel much more interesting analysis could have been done.  Regardless, we did
-see some interesting bi variate relationships between our input variables of
-interest and their effect on the output variable 'quality'.
+the data set contained information like grape types, wine brand,
+wine selling price, etc I feel much more interesting analysis could have been
+done.  Regardless, we did see some interesting bi variate relationships between
+our input variables of interest and their impact on the output
+variable 'quality'.
 
 If I were to do further analysis I'd try to wrangle a bigger set, with some of
-the aforementioned attributes.  Then I could begin to conclusions on things
+the aforementioned attributes.  Then I could try to determine things
 like 'highest quality wine brands' or 'best value wines'.
