@@ -11,14 +11,14 @@ editor_options:
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 
 # Install packages
-install.packages('GGally')
-install.packages('scales')
-install.packages('memisc')
-install.packages('lattice')
-install.packages('MASS')
-install.packages('car')
-install.packages('reshape')
-install.packages('plyr')
+# install.packages('GGally')
+# install.packages('scales')
+# install.packages('memisc')
+# install.packages('lattice')
+# install.packages('MASS')
+# install.packages('car')
+# install.packages('reshape')
+# install.packages('plyr')
 
 #Library Imports
 library(RColorBrewer)
@@ -68,7 +68,17 @@ The quality is a median of >= 3 expert's ratings
 wine$badfso <- factor(wine$free.sulfur.dioxide > 50)
 ```
 
+Adding a Boolean factor variable here called 'badfso' to denote if a sample has
+a  a free sulfur dioxide value above 50 ppm, the threshold where it becomes
+noticeable to taste and smell.
 
+```{r}
+# Histogram - badfso(Is Free sulfur Dioxide > 50? T/F)
+qplot(x = badfso, data = wine)
+```
+
+A histogram of this plot show the overwhelming majority of samples below the
+50 ppm threshold for being a 'bad' free sulfur dioxide value.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Histogram - Quality
@@ -358,28 +368,40 @@ row names.  The source described the data as being tidy already.
 # Bivariate Plots Section
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Scatterplot - volatile acidity by quality
+# scatterplot (jittered) - volatile acidity and quality
 ggplot(wine, aes(volatile.acidity, quality)) +
-  scale_x_continuous(lim = c(0, quantile(wine$volatile.acidity, 0.99))) +
-  scale_y_continuous(lim = c(0, quantile(wine$quality, 0.99))) +
-  geom_point(
-  fill = I('#F79420'),
-  color = I('black'),
-  shape = 21
-  )
+scale_x_continuous(lim = c(
+min(wine$volatile.acidity),
+# lower lim set to min to help center data
+quantile(wine$volatile.acidity, 0.99)
+)) +
+scale_y_continuous(lim = c(min(wine$quality),
+quantile(wine$quality, 0.99))) +
+# using geom jitter to help see density of data
+geom_jitter(
+# Height/width: max values points can be jittered around
+height = .35,
+width = 0,
+fill = I('#F79420'),
+color = I('black'),
+shape = 21
+)
 ```
 
-It looks like there might be a pattern here with this geom_point graph but it's
-a little hard to discern.  Lets try using quality as a factor and use that to
-generate a box plot instead.
+Although scatter plots generally aren't great for analyzing categorical data,
+with the use of a jittered scatter plot we're able to see a clear trend.  As
+volatile acidity increases, quality scores go down. Additionally, lets try
+using quality as a factor and use that to generate a box plot instead.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Boxplot - Volatile acidity by quality
-ggplot(wine, aes(factor(quality), volatile.acidity, color = factor(quality))) +
-  geom_boxplot(outlier.colour = "red") +
+ggplot(wine, aes(factor(quality), volatile.acidity)) +
+  geom_boxplot(outlier.colour = "red", color = "darkblue") +
   stat_summary(fun.y = mean,
   geom = 'point',
-  shape = 8)
+  shape = 8) +
+  guides(color=FALSE)  # surpress legend to avoid distracting reader
+
   
 ```
 
@@ -399,11 +421,12 @@ between quality and volatile acidity.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Boxplot - Citric acid by quality
-ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
-  geom_boxplot(outlier.colour = "red") +
+ggplot(wine, aes(factor(quality), citric.acid)) +
+  geom_boxplot(outlier.colour = "red", color = "darkblue") +
   stat_summary(fun.y = mean,
                geom = 'point',
-               shape = 8) 
+               shape = 8) +
+  guides(color=FALSE)  # surpress legend to avoid distracting reader
 ```
 
 Here we see another clear pattern.  In this case as citric acid increases the
@@ -419,13 +442,12 @@ quality
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Boxplot - Free Sulfur Dioxide by Quality
-ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
-                 color = factor(quality))) +
-                 geom_boxplot(outlier.colour = "red") +
-                 stat_summary(fun.y = mean,
-                 geom = 'point',
-                 shape = 8)
-                 
+ggplot(wine, aes(factor(quality), free.sulfur.dioxide)) +
+  geom_boxplot(outlier.colour = "red", color = "darkblue") +
+  stat_summary(fun.y = mean,
+  geom = 'point',
+  shape = 8) +
+  guides(color = FALSE)  # surpress legend to avoid distracting reader
 ```
 
 This graph is perhaps the most interesting so far. Free sulfur dioxide seems
@@ -466,7 +488,7 @@ qplot(data = wine,  x = volatile.acidity) +
 Unfortunately this faceted plot doesn't seem very useful partly because the
 classes(quality scores) aren't balanced.
 
-Below we'll use gg pairs to generate a grid of pairwise plots.
+Below we'll use ggpairs to generate a grid of pairwise plots.
 Quickly looking over our variables of interest to see if we missed anything
 important.
 
@@ -516,7 +538,7 @@ From The entire data set a high-strength negative correlation of -0.683 for
 'fixed acidity' and 'pH' seemed to be the strongest correlation I saw.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Correlation fixed acidity by pH 
+# Correlation - fixed acidity by pH 
 cor(wine$fixed.acidity, wine$pH)
 ```
 
@@ -524,7 +546,7 @@ cor(wine$fixed.acidity, wine$pH)
 # Multivariate Plots Section
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Scatterplot citric.acid by volatile.acidity and quality  
+# Scatterplot - citric.acid by volatile.acidity and quality  
 ggplot(aes(
 x = volatile.acidity,
 y = citric.acid,
@@ -550,7 +572,7 @@ their is a cluster of high quality samples with low volatile acidity and high
 citric acid values.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Scatterplots citric.acid by volatile.acidity and quality
+# Scatterplots - citric.acid by volatile.acidity and quality
 ggplot(aes(
   x = free.sulfur.dioxide,
   y = badfso
@@ -579,7 +601,8 @@ achieved quality of 8.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Scatter plot - free S02 by total S02 and quality 
 ggplot(wine, aes(free.sulfur.dioxide, total.sulfur.dioxide)) +
-  geom_point(aes(color = factor(quality)), stat = 'summary', fun.y = median) +
+  # including all observations so see high values of free sulfur dioxide 
+  geom_point(aes(color = factor(quality))) +
   scale_color_brewer(type = 'seq',
   guide = guide_legend(
   title = 'quality',
@@ -597,7 +620,7 @@ Seem to see greater dispersion between samples as total S02 and free SO2
 increase. At lower values they seem more tightly clustered together.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Line plot = Citric Acid by Free SO2 and Quality 
+# Line plot - Citric Acid by Free SO2 and Quality 
 ggplot(aes(
   x = free.sulfur.dioxide,
   y = citric.acid,
@@ -606,8 +629,8 @@ ggplot(aes(
   data = wine) +
   geom_line(
   aes(color = factor(quality)),
-  stat = 'summary',
-  fun.y = median,
+  # stat = 'summary',
+  # fun.y = median,
   size = 1,
   alpha = .5
   ) +
@@ -667,18 +690,19 @@ insights.
 
 ### Plot One
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Boxplot - quality by volatile acidity
-ggplot(wine, aes(factor(quality), volatile.acidity, color = factor(quality))) +
-  geom_boxplot(outlier.colour = "red") +
+# Boxplot - Volatile Acidity by Quality
+ggplot(wine, aes(factor(quality), volatile.acidity)) +
+  geom_boxplot(outlier.colour = "red", color = "darkblue") +
   stat_summary(fun.y = mean,
   geom = 'point',
   shape = 8) +
   labs(
-    title = "Volatile Acidity by Quality Boxplot",
-    x = "Quality rating (score between 0 and 10)", 
-    y = "volatile acidity (acetic acid - g / dm^3)",
-    colour = "Quality"
-  )
+  title = "Volatile Acidity by Quality Boxplot",
+  x = "Quality rating (score between 0 and 10)",
+  y = "volatile acidity (acetic acid - g / dm^3)",
+  colour = "Quality"
+  ) +
+  guides(color = FALSE)
 ```
 
 ### Description One
@@ -689,9 +713,9 @@ of receiving a high quality rating.
 
 ### Plot Two
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Boxplot - quality by citric acid
-ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
-  geom_boxplot(outlier.colour = "red") +
+# Boxplot - Citric Acid by Quality 
+ggplot(wine, aes(factor(quality), citric.acid)) +
+  geom_boxplot(outlier.colour = "red", color = "darkblue") +
   stat_summary(fun.y = mean,
   geom = 'point',
   shape = 8) +
@@ -700,7 +724,8 @@ ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
   x = "Quality rating (score between 0 and 10)",
   y = "Citric acid (g / dm^3)",
   colour = "Quality"
-  )
+  ) +
+  guides(color = FALSE)
 ```
 
 ### Description Two
@@ -711,19 +736,19 @@ positive and linear.
 
 ### Plot Three
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Boxplot 
-ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
-                 color = factor(quality))) +
-                 geom_boxplot(outlier.colour = "red") +
-                 stat_summary(fun.y = mean,
-                 geom = 'point',
-                 shape = 8) +
-                 labs(
-                 title = "Free Sulfur Dioxide by Quality Boxplot",
-                 x = "Quality rating (score between 0 and 10)",
-                 y = "Free Sulfur Dioxide (mg / dm^3)",
-                 colour = "Quality"
-                 )
+# Boxplot - Free Sulfur Dioxide by Quality
+ggplot(wine, aes(factor(quality), free.sulfur.dioxide)) +
+geom_boxplot(outlier.colour = "red", color = "darkblue") +
+stat_summary(fun.y = mean,
+geom = 'point',
+shape = 8) +
+labs(
+title = "Free Sulfur Dioxide by Quality Boxplot",
+x = "Quality rating (score between 0 and 10)",
+y = "Free Sulfur Dioxide (mg / dm^3)",
+colour = "Quality"
+) +
+guides(color = FALSE)
 ```
 
 ### Description Three
@@ -753,13 +778,23 @@ process than simply keeping FS02 high.
 
 # Reflection
 
-Ultimately this data set seemed to not be great for multivariate analysis. Had
+Coming from a background in python, I did not like R at first.  After working
+more with R throughout this course I grew to like it a lot. R studio
+was an amazing environment to work in. The multi-pane configuration with 
+notebook, console, plots, and environment data was extremely useful.  
+The visualization libraries are fantastic and the tidyr documentation was
+very helpful.  I felt I learned a lot about EDA and R, but I also realized that
+I still have a lot to learn regarding EDA.  I feel I struggled a bit with
+creating useful insights but that may be partly due to my limited
+background knowledge on the data set.
+
+Ultimately, this data set seemed to not be great for multivariate analysis. Had
 the data set contained information like grape types, wine brand,
 wine selling price, etc I feel much more interesting analysis could have been
-done.  Regardless, we did see some interesting bi variate relationships between
-our input variables of interest and their impact on the output
+done.  Regardless, I did see some interesting bi-variate relationships between
+the input variables of interest and their impact on the output
 variable 'quality'.
 
-If I were to do further analysis I'd try to wrangle a bigger set, with some of
-the aforementioned attributes.  Then I could try to determine things
-like 'highest quality wine brands' or 'best value wines'.
+An idea for future work regarding this data set would be to create a linear
+model to predict quality from applicable input variables in this data set.
+

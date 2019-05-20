@@ -8,3 +8,4 @@ https://www.rdocumentation.org/
 http://www.cookbook-r.com/
 https://docs.google.com/document/d/1-f3wM3mJSkoWxDmPjsyRnWvNgM57YUPloucOIl07l4c/pub
 google.com
+https://ggplot2.tidyverse.org/reference/
