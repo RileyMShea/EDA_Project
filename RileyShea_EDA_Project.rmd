@@ -472,7 +472,7 @@ important.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # No need sample with a seed for this size of sample
-# ggpairs grid - Key Variables
+# ggpairs grid - pairwise plots and correlation coeff
 ggpairs(
 subset(
 wine,
@@ -485,7 +485,7 @@ select = c(
 ),
 lower = list(continuous = wrap("points", shape = I('.'))),
 upper = list(combo = wrap("box", outlier.shape = I('.'))),
-axisLabels = 'internal'  # display 
+axisLabels = 'internal'  # display variables along diagonal 
 )
 ```
 
@@ -534,7 +534,7 @@ geom_point(alpha = 1, size = 2) +
 scale_color_brewer(type = 'div',
 guide = guide_legend(
 title = 'quality',
-reverse = T,
+reverse = T,  # order guide from high to low 
 override.aes = list(alpha = 1, size = 2)
 )) +
 scale_x_continuous(limits = c(0.15, 1.25),
@@ -577,7 +577,7 @@ affects the taste quality. None of the samples with free S02 over 50ppm
 achieved quality of 8.  
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Scatter plot: 
+# Scatter plot - free S02 by total S02 and quality 
 ggplot(wine, aes(free.sulfur.dioxide, total.sulfur.dioxide)) +
   geom_point(aes(color = factor(quality)), stat = 'summary', fun.y = median) +
   scale_color_brewer(type = 'seq',
@@ -597,6 +597,7 @@ Seem to see greater dispersion between samples as total S02 and free SO2
 increase. At lower values they seem more tightly clustered together.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Line plot = Citric Acid by Free SO2 and Quality 
 ggplot(aes(
   x = free.sulfur.dioxide,
   y = citric.acid,
@@ -666,6 +667,7 @@ insights.
 
 ### Plot One
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Boxplot - quality by volatile acidity
 ggplot(wine, aes(factor(quality), volatile.acidity, color = factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
   stat_summary(fun.y = mean,
@@ -687,6 +689,7 @@ of receiving a high quality rating.
 
 ### Plot Two
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Boxplot - quality by citric acid
 ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
   stat_summary(fun.y = mean,
@@ -708,6 +711,7 @@ positive and linear.
 
 ### Plot Three
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Boxplot 
 ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
                  color = factor(quality))) +
                  geom_boxplot(outlier.colour = "red") +
