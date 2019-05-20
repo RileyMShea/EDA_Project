@@ -9,15 +9,18 @@ editor_options:
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
-# These lines may need to be uncommented if the packages aren't installed
-# install.packages('GGally')
-# install.packages('scales')
-# install.packages('memisc')
-# install.packages('lattice')
-# install.packages('MASS')
-# install.packages('car')
-# install.packages('reshape')
-# install.packages('plyr')
+
+# Install packages
+install.packages('GGally')
+install.packages('scales')
+install.packages('memisc')
+install.packages('lattice')
+install.packages('MASS')
+install.packages('car')
+install.packages('reshape')
+install.packages('plyr')
+
+#Library Imports
 library(RColorBrewer)
 library(grid)
 library(gridExtra)
@@ -27,6 +30,12 @@ library(memisc)
 library(ggplot2)
 library(knitr)
 library(dplyr)
+
+# knitr: Suppress code/messages/warnings 
+#        Set default plot options and center them
+knitr::opts_chunk$set(fig.width=9,fig.height=5,fig.path='Figs/',
+                      fig.align='center',tidy=TRUE,
+                      echo=FALSE,warning=FALSE,message=FALSE)
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -43,9 +52,9 @@ scores for approximately 1600 samples of red wine.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Dimensions of df
 dim(wine)
-# list the the structure of df
+# List the the structure of df
 str(wine)
-# some quick stats on the columns of df
+# Some quick stats on the columns of df
 summary(wine)
 ```
 
@@ -55,13 +64,14 @@ The 'X' variable is merely the row number, so it was dropped after import.
 The quality is a median of >= 3 expert's ratings
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Add boolean factor variable for free SO2 over/under 50 ppm
 wine$badfso <- factor(wine$free.sulfur.dioxide > 50)
 ```
 
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# use ggplot2 to create histogram
+# Histogram - Quality
 ggplot(aes(quality), data = wine) +
   geom_histogram(binwidth = 1, fill = '#5760AB') +
   ggtitle('Quality') +
@@ -72,6 +82,7 @@ Unfortunately the quality is somewhat imbalanced. Perhaps applying a log10
 transform will help.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Quality - scale_y_log10
 ggplot(aes(quality), data = wine) +
   geom_histogram(binwidth = 1, fill = 'brown') +
   ggtitle('Quality log10') +
@@ -81,6 +92,7 @@ ggplot(aes(quality), data = wine) +
 This transformed quality histogram looks much more normal.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Fixed Acidity
 ggplot(aes(fixed.acidity), data = wine) +
   geom_histogram(binwidth = .5, fill = '#5760AB') +
   ggtitle('Fixed Acidity Continuous') +
@@ -91,6 +103,7 @@ This fixed acidity histogram looks distribution looks fairly normal without a
 log transform.  Lets try one anyway.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Fixed Acidity scale_x_Log10
 ggplot(aes(fixed.acidity), data = wine) +
   geom_histogram(binwidth = .04, fill = '#5760AB') +
   ggtitle('Fixed Acidity Log10') +
@@ -100,6 +113,7 @@ ggplot(aes(fixed.acidity), data = wine) +
 Looks a bit more normal, but not significantly so.
 
 ```{r}
+# Histogram - Volatile Acidity
 qplot(data = wine, x = volatile.acidity, bins = 50)
 ```
 
@@ -107,6 +121,7 @@ If we omit the low counts to the right this volatile acidity histogram looks
 pretty normalized.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Volatile Acidity 
 ggplot(aes(volatile.acidity), data = wine) +
   geom_histogram(binwidth = .05, fill = '#5760AB') +
   ggtitle('Volatile Acidity') +
@@ -116,6 +131,7 @@ ggplot(aes(volatile.acidity), data = wine) +
 Yes, omitting those low counts seems to help the shape.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Citric Acid
 ggplot(aes(citric.acid), data = wine) +
   geom_histogram(binwidth = .01, fill = '#5760AB') +
   ggtitle('Citric Acid') +
@@ -130,7 +146,9 @@ crafting their wine.
 Also see a smaller spike ~.5 which could potentially be a result of less precise
 measurements or maybe a value that some winemakers aim to have in their wine.
 
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Citric Acid - scale_x_log10
 ggplot(aes(wine$citric.acid ), data = wine) +
   geom_histogram(binwidth = 0.04, fill = '#5760AB') +
   ggtitle('Citric Acid') +
@@ -142,6 +160,7 @@ Transforming this Citric Acid histogram seems to confirm our suspicions, showing
 a bi modal graph with a couple peaks at .25, and .5.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Residual Sugar
 qplot(data= wine, x = residual.sugar, bins = 50)
 ```
 
@@ -149,6 +168,7 @@ Initially this residual sugar looks somewhat long tailed, but limiting the
 x axis should give us a more normal shape
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Residual Sugar - reshaped
 ggplot(aes(residual.sugar), data = wine) +
   geom_histogram(binwidth = .25, fill = '#5760AB') +
   ggtitle('Residual Sugar') +
@@ -158,6 +178,7 @@ ggplot(aes(residual.sugar), data = wine) +
 That looks a bit better
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Chlorides
 qplot(data = wine, x = chlorides, bins = 50)
 ```
 
@@ -165,6 +186,7 @@ This chlorides histogram looks like it would be normal if we remove some of
 these potential outliers.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Chlorides - reshaped
 ggplot(aes(chlorides), data = wine) +
   geom_histogram(binwidth = .01, fill = '#5760AB') +
   ggtitle('Chlorides') +
@@ -175,6 +197,7 @@ This looks limit helps confirm a normal shape.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Free Sulfur Dioxide
 qplot(data = wine, x = free.sulfur.dioxide, bins = 20)
 ```
 
@@ -182,6 +205,7 @@ This free sulfur dioxide appears long-tailed so we'll try transforming it to
 better understand it's shape.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Free Sulfur Dioxide scale_x_log10
 ggplot(aes(free.sulfur.dioxide), data = wine) +
   geom_histogram(binwidth = .2, fill = '#5760AB') +
   ggtitle('Free Sulfur Dioxide scale_x_log10') +
@@ -192,6 +216,7 @@ This scale helps use see it's uni modal distribution.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Total Sulfur Dioxide
 qplot(data = wine, x = total.sulfur.dioxide, bins = 20)
 ```
 
@@ -199,6 +224,7 @@ Just as with free sulfur dioxide we see a long tailed histogram. Lets try
 another log_x_10 layer.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Total Sulfur Dioxide scale_x_log10
 ggplot(aes(total.sulfur.dioxide), data = wine) +
   geom_histogram(binwidth = .2, fill = '#5760AB') +
   ggtitle('Total Sulfur Dioxide scale_x_log10') +
@@ -209,6 +235,7 @@ Once again applying this scale_x_log10 helps us see the normal, uni modal shape.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Density
 ggplot(aes(density), data = wine) +
   geom_histogram(binwidth = .001, fill = '#5760AB') +
   ggtitle('density') +
@@ -219,6 +246,7 @@ This density histogram already shows a normal shape, doesn't seem to need a
 log10 scale.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - pH
 ggplot(aes(pH), data = wine) +
   geom_histogram(binwidth = .1, fill = '#5760AB') +
   ggtitle('pH') +
@@ -228,6 +256,7 @@ ggplot(aes(pH), data = wine) +
 'pH' shows a normal shape for it's histogram.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Sulfates
 ggplot(aes(sulphates), data = wine) +
   geom_histogram(binwidth = .05, fill = '#5760AB') +
   ggtitle('Sulfates') +
@@ -237,6 +266,7 @@ ggplot(aes(sulphates), data = wine) +
 Sulfates looks fairly normal here.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Alcohol percent
 qplot(data = wine, x = alcohol, binwidth = 1) +
   scale_x_continuous(breaks = seq(7, 16, 1))
 ```
@@ -244,6 +274,7 @@ qplot(data = wine, x = alcohol, binwidth = 1) +
 Could argue this alcohol histogram is long tailed or normal I think.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Alcohol - scale_x_sqrt
 ggplot(aes(alcohol), data = wine) +
   geom_histogram(binwidth = .05, fill = '#5760AB') +
   ggtitle('Alcohol scale_x_sqrt') + 
@@ -253,9 +284,10 @@ ggplot(aes(alcohol), data = wine) +
 Applying a square root scale doesn't seem to change the shape.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Alcohol - scale_x_log10
 ggplot(aes(alcohol), data = wine) +
   geom_histogram(binwidth = .01, fill = '#5760AB') +
-  ggtitle('Alcohol') + 
+  ggtitle('Alcohol scale_x_log10') + 
   scale_x_log10(breaks = seq(8, 14, .5), limits=c(8.5, 13.5))
 ```
 
@@ -326,6 +358,7 @@ row names.  The source described the data as being tidy already.
 # Bivariate Plots Section
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Scatterplot - volatile acidity by quality
 ggplot(wine, aes(volatile.acidity, quality)) +
   scale_x_continuous(lim = c(0, quantile(wine$volatile.acidity, 0.99))) +
   scale_y_continuous(lim = c(0, quantile(wine$quality, 0.99))) +
@@ -341,6 +374,7 @@ a little hard to discern.  Lets try using quality as a factor and use that to
 generate a box plot instead.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Boxplot - Volatile acidity by quality
 ggplot(wine, aes(factor(quality), volatile.acidity, color = factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
   stat_summary(fun.y = mean,
@@ -353,7 +387,9 @@ This makes it much easier to see the pattern.  As quality rating increases both
 the median and mean volatile acidity decreases. This is true for each rating
 with the exception of quality rating 8 for which there was very little data.
 
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Correlation - quality to volatile acidity
 cor(wine$quality, wine$volatile.acidity)
 ```
 
@@ -362,6 +398,7 @@ between quality and volatile acidity.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Boxplot - Citric acid by quality
 ggplot(wine, aes(factor(quality), citric.acid, color = factor(quality))) +
   geom_boxplot(outlier.colour = "red") +
   stat_summary(fun.y = mean,
@@ -373,6 +410,7 @@ Here we see another clear pattern.  In this case as citric acid increases the
 factor increases too.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Correlation - quality to citric acid
 cor(wine$quality, wine$citric.acid)
 ```
 
@@ -380,6 +418,7 @@ This seems to indicate a small positive correlation between citric acid and
 quality
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Boxplot - Free Sulfur Dioxide by Quality
 ggplot(wine, aes(factor(quality), free.sulfur.dioxide,
                  color = factor(quality))) +
                  geom_boxplot(outlier.colour = "red") +
@@ -401,6 +440,7 @@ However since the relation doesn't look linear the correlation coefficient may
 not give us the full picture.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Correlation quality to Free Sulfur Dioxide
 cor(wine$quality, wine$free.sulfur.dioxide)
 ```
 
@@ -411,10 +451,14 @@ ordered factor.  With that in mind we'll add a factor attribute based on quality
 below.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Create Variable - Factor quality(from quality)
 wine$fQuality <- factor(wine$quality)
 ```
 
+
+ 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Histogram - Volatile Acidity, faceted by Quality as a factor
 qplot(data = wine,  x = volatile.acidity) +
   facet_wrap( ~ fQuality, scales="free_y") 
 ```
@@ -428,6 +472,7 @@ important.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # No need sample with a seed for this size of sample
+# ggpairs grid - Key Variables
 ggpairs(
 subset(
 wine,
@@ -440,7 +485,7 @@ select = c(
 ),
 lower = list(continuous = wrap("points", shape = I('.'))),
 upper = list(combo = wrap("box", outlier.shape = I('.'))),
-axisLabels = 'internal'
+axisLabels = 'internal'  # display 
 )
 ```
 
@@ -471,6 +516,7 @@ From The entire data set a high-strength negative correlation of -0.683 for
 'fixed acidity' and 'pH' seemed to be the strongest correlation I saw.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Correlation fixed acidity by pH 
 cor(wine$fixed.acidity, wine$pH)
 ```
 
@@ -478,6 +524,7 @@ cor(wine$fixed.acidity, wine$pH)
 # Multivariate Plots Section
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Scatterplot citric.acid by volatile.acidity and quality  
 ggplot(aes(
 x = volatile.acidity,
 y = citric.acid,
@@ -503,6 +550,7 @@ their is a cluster of high quality samples with low volatile acidity and high
 citric acid values.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Scatterplots citric.acid by volatile.acidity and quality
 ggplot(aes(
   x = free.sulfur.dioxide,
   y = badfso
@@ -513,8 +561,8 @@ ggplot(aes(
   stat = 'summary',
   fun.y = median,
   size = 5,
-  alpha = .75,
-  position = 'jitter'
+  alpha = .75,  #  Set transparency
+  position = 'jitter'  # Jitter the points to make points visible
   ) +
   ggtitle('Free sulfur dioxide > 50 ppm')
 ```
@@ -529,6 +577,7 @@ affects the taste quality. None of the samples with free S02 over 50ppm
 achieved quality of 8.  
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Scatter plot: 
 ggplot(wine, aes(free.sulfur.dioxide, total.sulfur.dioxide)) +
   geom_point(aes(color = factor(quality)), stat = 'summary', fun.y = median) +
   scale_color_brewer(type = 'seq',
